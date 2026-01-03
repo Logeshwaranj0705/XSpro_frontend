@@ -1,5 +1,5 @@
 import React from "react";
-import EmployeeInfoCard from "../cards/EmployeeInfoCard";
+import EmployeeInfoCard from "../cards/employeeInfoCard";
 import { LuArrowRight } from "react-icons/lu";
 
 const EmployeeData = ({ employee = [],onSeeMore }) => {
