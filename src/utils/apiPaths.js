@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:8000";
+export const BASE_URL = "https://xspro-backend.onrender.com";
 
 export const API_PATH = {
     AUTH: {
