@@ -1,5 +1,5 @@
 import React from 'react'
-import EmployeeInfoCard from "../cards/EmployeeInfoCard";
+import EmployeeInfoCard from "../cards/employeeInfoCard";
 
 const EmployeePreview = ({ employee = [] }) => {
   return (
