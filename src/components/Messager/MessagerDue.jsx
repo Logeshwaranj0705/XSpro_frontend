@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import moment from 'moment'
-import PaidUserInfo from '../cards/PaidUserInfo';
+import PaidUserInfo from '../cards/paidUserInfo';
 
 const MessagerDue = ({ status = [] }) => {
   const [searchTerm, setSearchTerm] = useState("");
