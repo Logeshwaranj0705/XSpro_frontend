@@ -1,6 +1,6 @@
 import React from "react";
 import moment from "moment";
-import PaidUserInfo from "../cards/PaidUserInfo";
+import PaidUserInfo from "../cards/paidUserInfo";
 import { LuArrowRight } from "react-icons/lu";
 
 const MessagerData = ({ status = [],onSeeMore }) => {
