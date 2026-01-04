@@ -22,10 +22,18 @@ const Analysis = () => {
   const [analysisData, setAnalysisData] = useState({ analysis: [] });
   const [employeeData, setEmployeeData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [openAddAnalysisModal, setOpenAddAnalysisModal] = useState(false);
   const [openAddEmployeeModal, setOpenAddEmployeeModal] = useState(false);
   const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    toast.info("Upload Executive Sheet First", {
+      position: "top-right",
+      autoClose: 3000
+    });
+  }, []);
 
   const fetchingAnalysisData = async () => {
     if (!user || loading) return;
@@ -115,31 +123,45 @@ const Analysis = () => {
 
   const handleUploadAnalysis = async (file) => {
     try {
+      setUploading(true);
+
       const data = await convertExcelToJSON(file);
       const query = selectedUserId ? `?userId=${selectedUserId}` : "";
+
       await axiosInstance.post(
         `${API_PATH.ANALYSIS.ADD_ANALYSIS}${query}`,
         { data }
       );
+
       toast.success("Customer sheet uploaded!");
       fetchingAnalysisData();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to upload analysis");
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleUploadEmployee = async (file) => {
     try {
+      setUploading(true);
+
       const data = await convertExcelToJSON(file);
       const query = selectedUserId ? `?userId=${selectedUserId}` : "";
+
       await axiosInstance.post(
         `${API_PATH.EMPLOYEE.ADD_EMPLOYEE}${query}`,
         { data }
       );
+
       toast.success("Executive sheet uploaded!");
       fetchingAnalysisData();
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast.error("Failed to upload employee sheet");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -150,11 +172,13 @@ const Analysis = () => {
         `${API_PATH.ANALYSIS.DOWNLOAD_ANALYSIS}${query}`,
         { responseType: "blob" }
       );
+
       const url = URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement("a");
       link.href = url;
       link.download = "analysis_details.xlsx";
       link.click();
+
       toast.success("Excel downloaded!");
     } catch {
       toast.error("Failed to download Excel");
@@ -163,10 +187,22 @@ const Analysis = () => {
 
   return (
     <DashBoardLayout activeMenu="Analysis">
+      {uploading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white px-8 py-6 rounded-xl shadow-xl flex flex-col items-center gap-4">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-sm text-gray-700">
+              Processing Excel file...
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="my-6 mx-auto">
         <ToastContainer />
+
         {loading ? (
-          <p className="text-center mt-10">Loading...</p>
+          <p className="text-center text-gray-500 mt-10">Loading...</p>
         ) : (
           <div className="grid grid-cols-3 gap-6">
             <div className="col-span-3">
