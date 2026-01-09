@@ -65,7 +65,6 @@ const Signup = () => {
         <p className="text-xs text-slate-700 mt-[5px] mb-5">Join us by entering your details below.</p>
 
         <form onSubmit={handleSignUp}>
-          <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
 
           <div className="grid grid-cols-1 md:grid-cols-2">
             <Input
