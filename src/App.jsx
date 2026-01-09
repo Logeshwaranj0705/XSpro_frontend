@@ -6,13 +6,14 @@ import{
 } from "react-router-dom";
 
 import Login from "./pages/Auth/Login";
-import SignUp from './pages/Auth/SignUp';
+import SignUp from './pages/Auth/Signup';
 import Home from "./pages/Dashboard/Home";
 
 import UserProvider from "./context/userContext";
 import Analysis from './pages/Dashboard/Analysis';
 import Messager from './pages/Dashboard/Messager';
 import Tracker from "./components/admin/Tracker";
+import Feedback from './pages/Dashboard/Feedback';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/analysis" element={<Analysis />} />
         <Route path="/messager" element={<Messager />} />
         <Route path="/tracker" element={<Tracker />} />
+        <Route path="/feedback" element={<Feedback />} />
       </Routes>
     </Router>
     </UserProvider>
