@@ -12,6 +12,8 @@ import {
 } from "react-icons/ri";
 
 import { MdGpsFixed } from "react-icons/md";
+import { MdFeedback } from "react-icons/md";
+
 
 
 export const SIDE_MENU_DATA =[
@@ -32,6 +34,12 @@ export const SIDE_MENU_DATA =[
         label:"Messager",
         icon:RiMessage2Line  ,
         path: "/messager",
+    },
+    {
+        id:"04",
+        label:"Feedback",
+        icon:MdFeedback,
+        path: "/feedback"
     },
     {
         id:"06",
@@ -64,6 +72,12 @@ export const SIDE_MENU_ADMIN_DATA =[
         label:"Tracker",
         icon:MdGpsFixed,
         path:"/tracker"
+    },
+    {
+        id:"05",
+        label:"Feedback",
+        icon:MdFeedback,
+        path: "/feedback"
     },
     {
         id:"06",
