@@ -1,64 +1,144 @@
-import React,{useRef, useState} from 'react';
-import {LuUser, LuUpload, LuTrash} from "react-icons/lu";
+import React, { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { validateEmail } from "../../utils/helper";
+import AuthLayout from "../../components/layouts/AuthLayout";
+import ProfilePhotoSelector from "../../components/inputs/ProfilePhotoSelector";
+import Input from "../../components/inputs/input";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATH } from "../../utils/apiPaths";
+import { UserContext } from "../../context/userContext";
 
-const ProfilePhotoSelector = ({image, setImage}) => {
-  const inputRef = useRef(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+const Signup = () => {
+  const value = "signup";
+  const { updateUser } = useContext(UserContext);
+  const navigate = useNavigate();
 
-  const handleImageChange = (event) =>{
-    const file = event.target.files[0];
-    if(file){
-      setImage(file);
-      setPreviewUrl(URL.createObjectURL(file));
+  const [profilePic, setProfilePic] = useState(null);
+  const [fullname, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+
+    if (!fullname) return setError("Please enter your name");
+    if (!validateEmail(email))
+      return setError("Please enter a valid email address");
+    if (!password) return setError("Please enter your password");
+    if (!role) return setError("Please select your role");
+
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("fullname", fullname);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("role", role);
+      if (profilePic) formData.append("profileImage", profilePic);
+
+      const response = await axiosInstance.post(
+        API_PATH.AUTH.REGISTER,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      const { token, user } = response.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(user);
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          "Something went wrong. Please try again."
+      );
     }
   };
 
-  const handleRemoveImage = () =>{
-    setImage(null);
-    setPreviewUrl(null);
-  };
-
   return (
-    <div className="flex justify-center mb-6">
-      <input 
-        type="file"
-        accept="image/*"
-        ref={inputRef}
-        onChange={handleImageChange}
-        className="hidden"
-      />
+    <AuthLayout isActive={value}>
+      <div className="w-full min-h-screen flex flex-col justify-start px-4 sm:px-6 md:px-8 lg:px-12 pt-6 overflow-y-auto">
+        <h3 className="text-lg sm:text-xl font-semibold text-black">
+          Create an Account
+        </h3>
+        <p className="text-xs sm:text-sm text-slate-700 mt-1 mb-9">
+          Join us by entering your details below.
+        </p>
 
-      {!image ? (
-        <div className="w-20 h-20 flex items-center justify-center bg-blue-400 rounded-full relative">
-          <LuUser className="text-4xl text-primary" />
+
+        <form onSubmit={handleSignUp} className="w-full max-w-xl md:max-w-none">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+            <Input
+              value={fullname}
+              onChange={setFullName}
+              label="Full Name"
+              placeholder="Name"
+              type="text"
+            />
+
+            <Input
+              value={email}
+              onChange={setEmail}
+              label="Email Address"
+              placeholder="Enter your email"
+              type="text"
+            />
+
+            <div className="md:col-span-2">
+              <Input
+                value={password}
+                onChange={setPassword}
+                label="Password"
+                placeholder="Min 8 Characters"
+                type="password"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <Input
+                value={role}
+                onChange={setRole}
+                label="User role"
+                placeholder="Choose role"
+                type="select"
+                options={[
+                  { value: "admin", label: "Admin" },
+                  { value: "user", label: "User" },
+                ]}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <p className="text-red-500 text-xs mt-2">{error}</p>
+          )}
 
           <button
-            type="button"
-            onClick={() => inputRef.current.click()}
-            className="absolute bottom-1 right-1 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center"
+            type="submit"
+            className="w-full text-sm font-medium text-white bg-blue-600 p-3 rounded-md mt-4 hover:bg-blue-700 transition"
           >
-            <LuUpload />
+            SIGNUP
           </button>
-        </div>
-      ) : (
-        <div className="relative">
-          <img
-            src={previewUrl}
-            alt="Profile"
-            className="w-20 h-20 rounded-full object-cover"
-          />
+        </form>
 
-          <button
-            type="button"
-            onClick={handleRemoveImage}
-            className="absolute bottom-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"
+        <p className="text-xs sm:text-[13px] text-slate-800 mt-4 text-center sm:text-left">
+          Already have an account?{" "}
+          <Link
+            className="font-medium text-primary underline"
+            to="/login"
           >
-            <LuTrash />
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
+            LOGIN
+          </Link>
+        </p>
+      </div>
+    </AuthLayout>
+  );
+};
 
-export default ProfilePhotoSelector;
+export default Signup;
