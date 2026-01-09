@@ -84,7 +84,7 @@ const Feedback = () => {
     );
 
     const data = feedbackList.map((f) => ({
-      "Loan_no" : f.loan_no || "",
+      Loan_no: f.loan_no || "",
       "Customer Name": f.name || "",
       Feedback: f.feedback || "",
       "Employee Name": employee?.employeeName || "",
@@ -100,15 +100,19 @@ const Feedback = () => {
     <DashBoardLayout activeMenu="Feedback">
       <ToastContainer />
 
-      <div className="h-screen flex flex-col px-4 overflow-hidden">
-        <div className="shrink-0 mt-4 flex justify-between items-center p-4 rounded-xl shadow-sm bg-white">
-          <h1 className="text-2xl font-bold">Feedback</h1>
+      <div className="h-[100dvh] flex flex-col px-2 sm:px-4 overflow-hidden">
+        <div className="shrink-0 mt-3 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center p-3 sm:p-4 rounded-xl shadow-sm bg-white">
+          <h1 className="text-xl sm:text-2xl font-bold">
+            Feedback
+          </h1>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <select
               value={selectedEmployeeKey}
-              onChange={(e) => setSelectedEmployeeKey(e.target.value)}
-              className="w-64 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) =>
+                setSelectedEmployeeKey(e.target.value)
+              }
+              className="w-full sm:w-64 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Choose Executive</option>
               {employeeData.map((emp, index) => (
@@ -126,34 +130,38 @@ const Feedback = () => {
             <button
               onClick={handleExport}
               disabled={!feedbackList.length}
-              className="px-4 py-3 bg-green-600 text-white rounded-xl disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-3 bg-green-600 text-white rounded-xl disabled:opacity-50"
             >
               Export
             </button>
           </div>
         </div>
 
-        <div className="mt-4 bg-white rounded-xl p-4 overflow-auto">
+        <div className="flex-1 mt-3 sm:mt-4 bg-white rounded-xl p-3 sm:p-4 overflow-auto">
           {loadingFeedback ? (
-            <p>Loading feedback...</p>
+            <p className="text-sm sm:text-base">
+              Loading feedback...
+            </p>
           ) : feedbackList.length === 0 ? (
-            <p className="text-gray-500">No feedback available</p>
+            <p className="text-gray-500 text-sm sm:text-base">
+              No feedback available
+            </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {feedbackList.map((f, idx) => (
                 <div
                   key={idx}
-                  className="border rounded-xl p-4 shadow-sm"
+                  className="border rounded-xl p-4 shadow-sm hover:shadow transition"
                 >
-                  <p className="font-semibold text-gray-800">
+                  <p className="font-semibold text-gray-800 text-sm sm:text-base">
                     {f.name}
                   </p>
 
-                  <p className="font-semibold text-gray-800">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     {f.loan_no}
                   </p>
 
-                  <p className="mt-2 text-gray-600">
+                  <p className="mt-2 text-sm sm:text-base text-gray-700">
                     {f.feedback}
                   </p>
                 </div>
