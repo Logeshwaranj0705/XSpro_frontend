@@ -100,7 +100,6 @@ const Tracker = () => {
       .map((p) => ({ lat: p.lat, lng: p.lng }));
   }, [assignments]);
 
-  /** 🔥 FETCH REAL ROAD DISTANCES USING GOOGLE DIRECTIONS */
   useEffect(() => {
     if (!window.google || visitedPath.length < 2) return;
 
@@ -109,32 +108,23 @@ const Tracker = () => {
 
     const fetchDistances = async () => {
       for (let i = 0; i < visitedPath.length - 1; i++) {
-        const origin = visitedPath[i];
-        const destination = visitedPath[i + 1];
-
         await new Promise((resolve) => {
           service.route(
             {
-              origin,
-              destination,
+              origin: visitedPath[i],
+              destination: visitedPath[i + 1],
               travelMode: window.google.maps.TravelMode.DRIVING,
             },
             (result, status) => {
-              if (
-                status === "OK" &&
-                result.routes[0]?.legs[0]?.distance
-              ) {
-                distances[i] =
-                  result.routes[0].legs[0].distance.text; // eg: "5.3 km"
-              } else {
-                distances[i] = "-";
-              }
+              distances[i] =
+                status === "OK"
+                  ? result.routes[0].legs[0].distance.text
+                  : "-";
               resolve();
             }
           );
         });
       }
-
       setSegmentDistances(distances);
     };
 
@@ -158,14 +148,14 @@ const Tracker = () => {
 
   return (
     <DashBoardLayout activeMenu="Tracker">
-      <div className="h-screen flex flex-col px-4 overflow-hidden">
-        <div className="shrink-0 mt-4 flex justify-between items-center p-4 rounded-xl shadow-sm bg-white">
-          <h1 className="text-2xl font-bold">📍 Tracker</h1>
+      <div className="h-[100dvh] flex flex-col px-2 sm:px-4 overflow-hidden">
+        <div className="shrink-0 mt-3 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center p-3 sm:p-4 rounded-xl shadow-sm bg-white">
+          <h1 className="text-xl sm:text-2xl font-bold">📍 Tracker</h1>
 
           <select
             value={selectedWorker}
             onChange={(e) => setSelectedWorker(e.target.value)}
-            className="w-64 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full sm:w-64 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Choose Executive</option>
             {workers.map((w) => (
@@ -182,7 +172,7 @@ const Tracker = () => {
           </div>
         )}
 
-        <div className="h-[73%] mt-4 rounded-xl overflow-hidden shadow">
+        <div className="flex-1 mt-3 sm:mt-4 rounded-xl overflow-hidden shadow">
           {isLoaded && (
             <GoogleMap
               key={mapKey}
@@ -194,7 +184,6 @@ const Tracker = () => {
               {icons &&
                 assignments.map((point, index) => {
                   const pos = spreadPosition(point.lat, point.lng, index);
-
                   return (
                     <Marker
                       key={point.id}
@@ -205,23 +194,20 @@ const Tracker = () => {
                     >
                       {hoverMarker === point.id && (
                         <InfoWindow
-                          options={{
-                            disableAutoPan: true,
-                            headerDisabled: true,
-                          }}
+                          options={{ disableAutoPan: true, headerDisabled: true }}
                         >
-                          <div className="text-xs min-w-[140px]">
+                          <div className="text-xs sm:text-sm min-w-[140px] max-w-[220px]">
                             <div className="font-semibold mb-1">
                               {point.name}
                             </div>
                             <div>
                               Status:{" "}
                               <b
-                                style={{
-                                  color: point.visited
-                                    ? "#16a34a"
-                                    : "#dc2626",
-                                }}
+                                className={
+                                  point.visited
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }
                               >
                                 {point.visited ? "Visited" : "Not Visited"}
                               </b>
@@ -240,42 +226,36 @@ const Tracker = () => {
                 })}
 
               {visitedPath.length > 1 &&
-                visitedPath.map((p, i) =>
-                  i === visitedPath.length - 1 ? null : (
-                    <Polyline
-                      key={`seg-${i}`}
-                      path={[p, visitedPath[i + 1]]}
-                      options={{
-                        strokeColor: "#22c55e",
-                        strokeWeight: 4,
-                      }}
-                      onMouseOver={() => setHoverSegment(i)}
-                      onMouseOut={() => setHoverSegment(null)}
-                    />
-                  )
+                visitedPath.map(
+                  (p, i) =>
+                    i !== visitedPath.length - 1 && (
+                      <Polyline
+                        key={i}
+                        path={[p, visitedPath[i + 1]]}
+                        options={{ strokeColor: "#22c55e", strokeWeight: 4 }}
+                        onMouseOver={() => setHoverSegment(i)}
+                        onMouseOut={() => setHoverSegment(null)}
+                      />
+                    )
                 )}
 
               {hoverSegment !== null && (() => {
-                const p1 = visitedPath[hoverSegment];
-                const p2 = visitedPath[hoverSegment + 1];
-                const mid = getMidPoint(p1, p2);
-                const dist = segmentDistances[hoverSegment];
-
+                const mid = getMidPoint(
+                  visitedPath[hoverSegment],
+                  visitedPath[hoverSegment + 1]
+                );
                 return (
                   <InfoWindow
                     position={mid}
-                    options={{
-                      disableAutoPan: true,
-                      headerDisabled: true,
-                    }}
+                    options={{ disableAutoPan: true, headerDisabled: true }}
                   >
-                    <div className="flex items-center justify-between gap-2 min-w-[170px]">
-                      <span className="text-xs font-semibold text-gray-700">
-                        Distance: {dist || "Calculating..."}
+                    <div className="flex justify-between gap-2 min-w-[140px] sm:min-w-[170px]">
+                      <span className="text-xs font-semibold">
+                        Distance: {segmentDistances[hoverSegment] || "..."}
                       </span>
                       <button
                         onClick={() => setHoverSegment(null)}
-                        className="text-gray-500 hover:text-black font-bold"
+                        className="font-bold"
                       >
                         ✕
                       </button>
