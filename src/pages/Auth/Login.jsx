@@ -108,9 +108,13 @@ const Login = () => {
           </button>
         </form>
 
-        <p className='text-[13px] text-slate-800 mt-3'>
+        <p className='hidden md:block text-[13px] text-slate-800 mt-3 '>
           Don't have an account?{" "}
           <Link className="font-medium text-primary underline" to="/signup">SIGNUP</Link>
+        </p>
+
+        <p className='block text-[13px] text-slate-800 mt-3 md:hidden '>
+         Use desktop to view signup page link
         </p>
       </div>
     </AuthLayout>
