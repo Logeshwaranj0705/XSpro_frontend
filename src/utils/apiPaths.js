@@ -27,6 +27,7 @@ export const API_PATH = {
 
     MESSAGER: {
         GET_ALL_HISTORY: "/api/v1/message/get",
+        SET_ALL_MESSAGE: "api/v1/message/msgSend"
     },
 
     DASHBOARD:{
