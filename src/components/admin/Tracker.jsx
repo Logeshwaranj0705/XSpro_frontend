@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useContext } from "react";
 import {
   GoogleMap,
   Marker,
@@ -8,6 +8,9 @@ import {
 } from "@react-google-maps/api";
 import DashBoardLayout from "../layouts/DashBoardLayout";
 import { useUserAuth } from "../../hooks/useUserAuth";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATH } from "../../utils/apiPaths";
+import { UserContext } from "../../context/userContext";
 
 const containerStyle = {
   width: "100%",
@@ -39,8 +42,10 @@ const getMidPoint = (p1, p2) => ({
 const Tracker = () => {
   useUserAuth();
 
-  const [workers, setWorkers] = useState([]);
-  const [selectedWorker, setSelectedWorker] = useState("");
+  const { user, selectedUserId } = useContext(UserContext);
+
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployeeKey, setSelectedEmployeeKey] = useState("");
   const [assignments, setAssignments] = useState([]);
   const [hoverMarker, setHoverMarker] = useState(null);
   const [hoverSegment, setHoverSegment] = useState(null);
@@ -49,7 +54,6 @@ const Tracker = () => {
   const [icons, setIcons] = useState(null);
   const [mapKey, setMapKey] = useState(0);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
   const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   const { isLoaded } = useJsApiLoader({
@@ -57,17 +61,25 @@ const Tracker = () => {
     libraries: ["geometry"],
   });
 
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => (document.body.style.overflow = "");
-  }, []);
+  /* 🔹 Fetch employees SAME AS FEEDBACK */
+  const fetchEmployees = async () => {
+    if (!user) return;
+
+    try {
+      const query = selectedUserId ? `?userId=${selectedUserId}` : "";
+      const res = await axiosInstance.get(
+        `${API_PATH.ANALYSIS.GET_EMPLOYEE_USAGE_COUNT}${query}`
+      );
+
+      setEmployees(Array.isArray(res.data) ? res.data : []);
+    } catch {
+      setError("Failed to load executives");
+    }
+  };
 
   useEffect(() => {
-    fetch(`${API_URL}/api/tracker/workers`)
-      .then((r) => r.json())
-      .then(setWorkers)
-      .catch(() => setError("Failed to load workers"));
-  }, []);
+    fetchEmployees();
+  }, [user, selectedUserId]);
 
   useEffect(() => {
     setAssignments([]);
@@ -76,13 +88,15 @@ const Tracker = () => {
     setSegmentDistances({});
     setMapKey(Date.now());
 
-    if (!selectedWorker) return;
+    if (!selectedEmployeeKey) return;
 
-    fetch(`${API_URL}/api/tracker/assignments/${selectedWorker}`)
-      .then((r) => r.json())
-      .then((d) => setAssignments(d?.points || []))
+    axiosInstance
+      .get(`/api/tracker/assignments/${selectedEmployeeKey}`)
+      .then((res) =>
+        setAssignments(Array.isArray(res.data?.points) ? res.data.points : [])
+      )
       .catch(() => setError("Failed to load assignments"));
-  }, [selectedWorker]);
+  }, [selectedEmployeeKey]);
 
   const visitedPath = useMemo(() => {
     return assignments
@@ -153,14 +167,19 @@ const Tracker = () => {
           <h1 className="text-xl sm:text-2xl font-bold">📍 Tracker</h1>
 
           <select
-            value={selectedWorker}
-            onChange={(e) => setSelectedWorker(e.target.value)}
+            value={selectedEmployeeKey}
+            onChange={(e) => setSelectedEmployeeKey(e.target.value)}
             className="w-full sm:w-64 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Choose Executive</option>
-            {workers.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
+            {employees.map((emp, idx) => (
+              <option
+                key={idx}
+                value={emp.employeeName
+                  .toLowerCase()
+                  .replace(/\s+/g, "_")}
+              >
+                {emp.employeeName}
               </option>
             ))}
           </select>
@@ -193,16 +212,12 @@ const Tracker = () => {
                       onMouseOut={() => setHoverMarker(null)}
                     >
                       {hoverMarker === point.id && (
-                        <InfoWindow
-                          options={{ disableAutoPan: true, headerDisabled: true }}
-                        >
-                          <div className="text-xs sm:text-sm min-w-[140px] max-w-[220px]">
-                            <div className="font-semibold mb-1">
-                              {point.name}
-                            </div>
+                        <InfoWindow options={{ disableAutoPan: true }}>
+                          <div className="text-xs min-w-[140px]">
+                            <b>{point.name}</b>
                             <div>
                               Status:{" "}
-                              <b
+                              <span
                                 className={
                                   point.visited
                                     ? "text-green-600"
@@ -210,14 +225,9 @@ const Tracker = () => {
                                 }
                               >
                                 {point.visited ? "Visited" : "Not Visited"}
-                              </b>
+                              </span>
                             </div>
-                            <div>
-                              Time:{" "}
-                              {point.visited
-                                ? formatTime(point.timestamp)
-                                : "-"}
-                            </div>
+                            <div>Time: {formatTime(point.timestamp)}</div>
                           </div>
                         </InfoWindow>
                       )}
@@ -239,30 +249,18 @@ const Tracker = () => {
                     )
                 )}
 
-              {hoverSegment !== null && (() => {
-                const mid = getMidPoint(
-                  visitedPath[hoverSegment],
-                  visitedPath[hoverSegment + 1]
-                );
-                return (
-                  <InfoWindow
-                    position={mid}
-                    options={{ disableAutoPan: true, headerDisabled: true }}
-                  >
-                    <div className="flex justify-between gap-2 min-w-[140px] sm:min-w-[170px]">
-                      <span className="text-xs font-semibold">
-                        Distance: {segmentDistances[hoverSegment] || "..."}
-                      </span>
-                      <button
-                        onClick={() => setHoverSegment(null)}
-                        className="font-bold"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </InfoWindow>
-                );
-              })()}
+              {hoverSegment !== null && (
+                <InfoWindow
+                  position={getMidPoint(
+                    visitedPath[hoverSegment],
+                    visitedPath[hoverSegment + 1]
+                  )}
+                >
+                  <div className="text-xs font-semibold">
+                    Distance: {segmentDistances[hoverSegment] || "..."}
+                  </div>
+                </InfoWindow>
+              )}
             </GoogleMap>
           )}
         </div>
