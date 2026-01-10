@@ -21,7 +21,7 @@ const AuthLayout = ({ children, isActive }) => {
       }`}></div>
 
       <div
-        className={`absolute top-0 w-[42%] h-screen bg-gray-100 z-20 min-w-[420px] rounded-tr-[270px] rounded-br-[270px]
+        className={`absolute top-0 w-[42%] h-screen bg-gray-100 z-20 min-w-[380px] rounded-tr-[270px] rounded-br-[270px]
         transition-all duration-700 ease-in-out
         ${state 
           ? " left-0 animate-slideLeft"
