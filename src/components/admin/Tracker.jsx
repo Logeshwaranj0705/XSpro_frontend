@@ -61,7 +61,6 @@ const Tracker = () => {
     libraries: ["geometry"],
   });
 
-  /* 🔹 Fetch employees SAME AS FEEDBACK */
   const fetchEmployees = async () => {
     if (!user) return;
 
@@ -162,7 +161,7 @@ const Tracker = () => {
 
   return (
     <DashBoardLayout activeMenu="Tracker">
-      <div className="h-[100dvh] flex flex-col px-2 sm:px-4 overflow-hidden">
+      <div className="h-[87dvh] flex flex-col px-2 sm:px-4 overflow-hidden">
         <div className="shrink-0 mt-3 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center p-3 sm:p-4 rounded-xl shadow-sm bg-white">
           <h1 className="text-xl sm:text-2xl font-bold">📍 Tracker</h1>
 
