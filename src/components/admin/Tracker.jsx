@@ -125,7 +125,7 @@ const Tracker = () => {
           <select
             value={selectedEmployeeKey}
             onChange={(e) => setSelectedEmployeeKey(e.target.value)}
-            className="w-full sm:w-64 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full sm:w-64 px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           >
             <option value="">Choose Executive</option>
             {employees.map((emp, idx) => (
