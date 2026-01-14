@@ -121,7 +121,7 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="w-full text-sm font-medium text-white bg-blue-600 p-3 rounded-md mt-4 hover:bg-blue-700 transition"
+            className="w-full text-sm font-medium text-white bg-blue-600 p-3 rounded-md mt-4 hover:bg-blue-700 transition cursor-pointer"
           >
             SIGNUP
           </button>
@@ -130,7 +130,7 @@ const Signup = () => {
         <p className="text-xs sm:text-[13px] text-slate-800 mt-4 text-center sm:text-left">
           Already have an account?{" "}
           <Link
-            className="font-medium text-primary underline"
+            className="font-medium text-primary underline cursor-pointer"
             to="/login"
           >
             LOGIN
