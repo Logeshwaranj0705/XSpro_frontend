@@ -1,23 +1,20 @@
 import React, { useEffect, useMemo, useState, useContext } from "react";
 import {
-  GoogleMap,
+  MapContainer,
+  TileLayer,
   Marker,
   Polyline,
-  InfoWindow,
-  useJsApiLoader,
-} from "@react-google-maps/api";
+  Tooltip
+} from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import DashBoardLayout from "../layouts/DashBoardLayout";
 import { useUserAuth } from "../../hooks/useUserAuth";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATH } from "../../utils/apiPaths";
 import { UserContext } from "../../context/userContext";
 
-const containerStyle = {
-  width: "100%",
-  height: "100%",
-};
-
-const defaultCenter = { lat: 13.0827, lng: 80.2707 };
+const defaultCenter = [13.0827, 80.2707];
 
 const formatTime = (ts) => {
   if (!ts) return "-";
@@ -29,15 +26,30 @@ const formatTime = (ts) => {
   });
 };
 
-const spreadPosition = (lat, lng, index) => {
-  const spread = (index % 6) * 0.00002;
-  return { lat: lat + spread, lng: lng - spread };
-};
-
-const getMidPoint = (p1, p2) => ({
-  lat: (p1.lat + p2.lat) / 2,
-  lng: (p1.lng + p2.lng) / 2,
+const greenIcon = new L.Icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+  iconSize: [32, 32],
 });
+
+const redIcon = new L.Icon({
+  iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+  iconSize: [32, 32],
+});
+
+const fetchDistance = async (from, to) => {
+  try {
+    const res = await fetch(
+      `https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?overview=false`
+    );
+    const data = await res.json();
+    if (data.routes?.length) {
+      return (data.routes[0].distance / 1000).toFixed(2) + " km";
+    }
+    return "-";
+  } catch {
+    return "-";
+  }
+};
 
 const Tracker = () => {
   useUserAuth();
@@ -47,51 +59,26 @@ const Tracker = () => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmployeeKey, setSelectedEmployeeKey] = useState("");
   const [assignments, setAssignments] = useState([]);
-  const [hoverMarker, setHoverMarker] = useState(null);
-  const [hoverSegment, setHoverSegment] = useState(null);
   const [segmentDistances, setSegmentDistances] = useState({});
   const [error, setError] = useState(null);
-  const [icons, setIcons] = useState(null);
-  const [mapKey, setMapKey] = useState(0);
-
-  const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: GOOGLE_KEY,
-    libraries: ["geometry"],
-  });
-
-  const fetchEmployees = async () => {
-    if (!user) return;
-
-    try {
-      const query = selectedUserId ? `?userId=${selectedUserId}` : "";
-      const res = await axiosInstance.get(
-        `${API_PATH.ANALYSIS.GET_EMPLOYEE_USAGE_COUNT}${query}`
-      );
-
-      setEmployees(Array.isArray(res.data) ? res.data : []);
-    } catch {
-      setError("Failed to load executives");
-    }
-  };
 
   useEffect(() => {
-    fetchEmployees();
+    if (!user) return;
+    const query = selectedUserId ? `?userId=${selectedUserId}` : "";
+    axiosInstance
+      .get(`${API_PATH.ANALYSIS.GET_EMPLOYEE_USAGE_COUNT}${query}`)
+      .then(res => setEmployees(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setError("Failed to load executives"));
   }, [user, selectedUserId]);
 
   useEffect(() => {
     setAssignments([]);
-    setHoverMarker(null);
-    setHoverSegment(null);
     setSegmentDistances({});
-    setMapKey(Date.now());
-
     if (!selectedEmployeeKey) return;
 
     axiosInstance
       .get(`/api/tracker/assignments/${selectedEmployeeKey}`)
-      .then((res) =>
+      .then(res =>
         setAssignments(Array.isArray(res.data?.points) ? res.data.points : [])
       )
       .catch(() => setError("Failed to load assignments"));
@@ -100,8 +87,10 @@ const Tracker = () => {
   const visitedPath = useMemo(() => {
     return assignments
       .filter(
-        (p) =>
+        p =>
           p.visited &&
+          p.lat &&
+          p.lng &&
           p.timestamp &&
           !isNaN(new Date(p.timestamp.replace(" ", "T")))
       )
@@ -109,55 +98,23 @@ const Tracker = () => {
         (a, b) =>
           new Date(a.timestamp.replace(" ", "T")) -
           new Date(b.timestamp.replace(" ", "T"))
-      )
-      .map((p) => ({ lat: p.lat, lng: p.lng }));
+      );
   }, [assignments]);
 
   useEffect(() => {
-    if (!window.google || visitedPath.length < 2) return;
-
-    const service = new window.google.maps.DirectionsService();
-    const distances = {};
-
-    const fetchDistances = async () => {
+    const loadDistances = async () => {
+      const distances = {};
       for (let i = 0; i < visitedPath.length - 1; i++) {
-        await new Promise((resolve) => {
-          service.route(
-            {
-              origin: visitedPath[i],
-              destination: visitedPath[i + 1],
-              travelMode: window.google.maps.TravelMode.DRIVING,
-            },
-            (result, status) => {
-              distances[i] =
-                status === "OK"
-                  ? result.routes[0].legs[0].distance.text
-                  : "-";
-              resolve();
-            }
-          );
-        });
+        distances[i] = await fetchDistance(
+          visitedPath[i],
+          visitedPath[i + 1]
+        );
       }
       setSegmentDistances(distances);
     };
 
-    fetchDistances();
+    if (visitedPath.length > 1) loadDistances();
   }, [visitedPath]);
-
-  const handleMapLoad = () => {
-    if (window.google) {
-      setIcons({
-        green: {
-          url: "https://maps.google.com/mapfiles/kml/paddle/grn-circle.png",
-          scaledSize: new window.google.maps.Size(36, 36),
-        },
-        red: {
-          url: "https://maps.google.com/mapfiles/kml/paddle/red-circle.png",
-          scaledSize: new window.google.maps.Size(36, 36),
-        },
-      });
-    }
-  };
 
   return (
     <DashBoardLayout activeMenu="Tracker">
@@ -174,9 +131,7 @@ const Tracker = () => {
             {employees.map((emp, idx) => (
               <option
                 key={idx}
-                value={emp.employeeName
-                  .toLowerCase()
-                  .replace(/\s+/g, "_")}
+                value={emp.employeeName.toLowerCase().replace(/\s+/g, "_")}
               >
                 {emp.employeeName}
               </option>
@@ -191,77 +146,58 @@ const Tracker = () => {
         )}
 
         <div className="flex-1 mt-3 sm:mt-4 rounded-xl overflow-hidden shadow">
-          {isLoaded && (
-            <GoogleMap
-              key={mapKey}
-              mapContainerStyle={containerStyle}
-              center={defaultCenter}
-              zoom={11}
-              onLoad={handleMapLoad}
-            >
-              {icons &&
-                assignments.map((point, index) => {
-                  const pos = spreadPosition(point.lat, point.lng, index);
-                  return (
-                    <Marker
-                      key={point.id}
-                      position={pos}
-                      icon={point.visited ? icons.green : icons.red}
-                      onMouseOver={() => setHoverMarker(point.id)}
-                      onMouseOut={() => setHoverMarker(null)}
-                    >
-                      {hoverMarker === point.id && (
-                        <InfoWindow options={{ disableAutoPan: true }}>
-                          <div className="text-xs min-w-[140px]">
-                            <b>{point.name}</b>
-                            <div>
-                              Status:{" "}
-                              <span
-                                className={
-                                  point.visited
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                                }
-                              >
-                                {point.visited ? "Visited" : "Not Visited"}
-                              </span>
-                            </div>
-                            <div>Time: {formatTime(point.timestamp)}</div>
-                          </div>
-                        </InfoWindow>
-                      )}
-                    </Marker>
-                  );
-                })}
+          <MapContainer
+            center={defaultCenter}
+            zoom={11}
+            style={{ width: "100%", height: "100%" }}
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-              {visitedPath.length > 1 &&
-                visitedPath.map(
-                  (p, i) =>
-                    i !== visitedPath.length - 1 && (
-                      <Polyline
-                        key={i}
-                        path={[p, visitedPath[i + 1]]}
-                        options={{ strokeColor: "#22c55e", strokeWeight: 4 }}
-                        onMouseOver={() => setHoverSegment(i)}
-                        onMouseOut={() => setHoverSegment(null)}
-                      />
-                    )
-                )}
-
-              {hoverSegment !== null && (
-                <InfoWindow
-                  position={getMidPoint(
-                    visitedPath[hoverSegment],
-                    visitedPath[hoverSegment + 1]
-                  )}
-                >
-                  <div className="text-xs font-semibold">
-                    Distance: {segmentDistances[hoverSegment] || "..."}
+            {assignments.map(point => (
+              <Marker
+                key={point.id}
+                position={[point.lat, point.lng]}
+                icon={point.visited ? greenIcon : redIcon}
+              >
+                <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+                  <div className="text-xs min-w-[140px]">
+                    <b>{point.name}</b>
+                    <div>
+                      Status:{" "}
+                      <span
+                        className={
+                          point.visited
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
+                        {point.visited ? "Visited" : "Not Visited"}
+                      </span>
+                    </div>
+                    <div>Time: {formatTime(point.timestamp)}</div>
                   </div>
-                </InfoWindow>
-              )}
-            </GoogleMap>
-          )}
+                </Tooltip>
+              </Marker>
+            ))}
+
+            {visitedPath.map((p, i) => {
+              if (i === visitedPath.length - 1) return null;
+              return (
+                <Polyline
+                  key={i}
+                  positions={[
+                    [p.lat, p.lng],
+                    [visitedPath[i + 1].lat, visitedPath[i + 1].lng]
+                  ]}
+                  pathOptions={{ color: "#22c55e", weight: 4 }}
+                >
+                  <Tooltip sticky>
+                    Distance: {segmentDistances[i] || "..."}
+                  </Tooltip>
+                </Polyline>
+              );
+            })}
+          </MapContainer>
         </div>
       </div>
     </DashBoardLayout>
