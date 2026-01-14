@@ -130,7 +130,7 @@ const Feedback = () => {
             <button
               onClick={handleExport}
               disabled={!feedbackList.length}
-              className="w-full sm:w-auto px-4 py-3 bg-green-600 text-white rounded-xl disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-3 bg-green-600 text-white rounded-xl disabled:opacity-50 cursor-pointer"
             >
               Export
             </button>
@@ -175,4 +175,5 @@ const Feedback = () => {
 };
 
 export default Feedback;
+
 
