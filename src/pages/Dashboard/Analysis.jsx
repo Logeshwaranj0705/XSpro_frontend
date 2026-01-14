@@ -6,6 +6,7 @@ import { API_PATH } from "../../utils/apiPaths";
 import * as XLSX from "xlsx";
 import { FaFolder } from "react-icons/fa";
 import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import AnalysisOverview from "../../components/analysis/AnalysisOverview";
@@ -185,6 +186,18 @@ const Analysis = () => {
     }
   };
 
+  const handleUpdateEmployee = async () =>{
+    try{
+      const query = selectedUserId ? `?userId=${selectedUserId}` : "";
+      await axiosInstance.post(
+        `${API_PATH.ANALYSIS.UPDATE_WORK}${query}`,
+      );
+      toast.success("Work updated successfully");
+    } catch {
+      toast.error("Faild to update work");
+    }
+  };
+
   return (
     <DashBoardLayout activeMenu="Analysis">
       {uploading && (
@@ -245,7 +258,15 @@ const Analysis = () => {
               </div>
             </div>
 
-            <div className="col-span-3">
+            <div className=" flex col-span-3 gap-6">
+              <button
+                onClick={handleUpdateEmployee}
+                className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded cursor-pointer"
+              >
+                <FiEdit />
+                Update Work
+              </button>
+              
               <button
                 onClick={handleDownloadExcel}
                 className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded"
