@@ -149,6 +149,7 @@ const Tracker = () => {
           <MapContainer
             center={defaultCenter}
             zoom={11}
+            zoomControl={false}
             style={{ width: "100%", height: "100%" }}
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
