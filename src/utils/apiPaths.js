@@ -18,6 +18,7 @@ export const API_PATH = {
         DOWNLOAD_ANALYSIS: "/api/v1/analysis/downloadexcel",
         GET_EMPLOYEE_USAGE_COUNT: "/api/v1/analysis/empcount",
         SET_NOTES:"/api/v1/analysis/addnote",
+        UPDATE_WORK:"/api/v1/analysis/update-work",
     },
 
     EMPLOYEE: {
