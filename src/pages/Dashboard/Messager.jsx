@@ -78,7 +78,7 @@ const Messager = () => {
         <button
           onClick={handleSendMessages}
           disabled={loading}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <FiSend className="text-lg" />
           Send
