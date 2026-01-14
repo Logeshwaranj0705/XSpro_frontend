@@ -10,7 +10,7 @@ const AdminUserSelector = ({ users, selectedUserId, onChange }) => {
       <select
         value={selectedUserId || ""}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary"
+        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
       >
         <option value="">-- Select a user --</option>
 
