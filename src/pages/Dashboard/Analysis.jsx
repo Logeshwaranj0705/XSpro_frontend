@@ -251,7 +251,7 @@ const Analysis = () => {
                 />
                 <button
                   onClick={handleSaveNotes}
-                  className="w-full mt-3 bg-blue-600 text-white py-2 rounded"
+                  className="w-full mt-3 bg-blue-600 text-white py-2 rounded cursor-pointer"
                 >
                   Save Notes
                 </button>
