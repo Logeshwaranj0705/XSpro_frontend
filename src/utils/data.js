@@ -37,6 +37,12 @@ export const SIDE_MENU_DATA =[
     },
     {
         id:"04",
+        label:"Tracker",
+        icon:MdGpsFixed,
+        path:"/tracker"
+    },
+    {
+        id:"05",
         label:"Feedback",
         icon:MdFeedback,
         path: "/feedback"
