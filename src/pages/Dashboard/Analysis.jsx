@@ -269,7 +269,7 @@ const Analysis = () => {
               
               <button
                 onClick={handleDownloadExcel}
-                className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded"
+                className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-2 rounded cursor-pointer"
               >
                 <FaFolder />
                 Download Excel
