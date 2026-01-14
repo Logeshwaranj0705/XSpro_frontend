@@ -24,7 +24,7 @@ const Analysis = () => {
   const [employeeData, setEmployeeData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [updating, setUpdateing] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const [openAddAnalysisModal, setOpenAddAnalysisModal] = useState(false);
   const [openAddEmployeeModal, setOpenAddEmployeeModal] = useState(false);
