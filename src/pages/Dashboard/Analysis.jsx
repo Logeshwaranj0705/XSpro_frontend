@@ -24,6 +24,7 @@ const Analysis = () => {
   const [employeeData, setEmployeeData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [updating, setUpdateing] = useState(false);
 
   const [openAddAnalysisModal, setOpenAddAnalysisModal] = useState(false);
   const [openAddEmployeeModal, setOpenAddEmployeeModal] = useState(false);
@@ -188,6 +189,7 @@ const Analysis = () => {
 
   const handleUpdateEmployee = async () =>{
     try{
+      setUpdating(true);
       const query = selectedUserId ? `?userId=${selectedUserId}` : "";
       await axiosInstance.post(
         `${API_PATH.ANALYSIS.UPDATE_WORK}${query}`,
@@ -195,6 +197,8 @@ const Analysis = () => {
       toast.success("Work updated successfully");
     } catch {
       toast.error("Faild to update work");
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -206,6 +210,17 @@ const Analysis = () => {
             <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
             <p className="text-sm text-gray-700">
               Processing Excel file...
+            </p>
+          </div>
+        </div>
+      )}
+
+      {updating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white px-8 py-6 rounded-xl shadow-xl flex flex-col items-center gap-4">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-sm text-gray-700">
+              Updating employee data...
             </p>
           </div>
         </div>
