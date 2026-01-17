@@ -143,7 +143,7 @@ const Feedback = () => {
               Loading feedback...
             </p>
           ) : feedbackList.length === 0 ? (
-            <p className="text-gray-500 text-sm sm:text-base flex justify-center">
+            <p className="text-gray-500 text-sm sm:text-base flex justify-center mt-12">
               No feedback available
             </p>
           ) : (
@@ -175,6 +175,7 @@ const Feedback = () => {
 };
 
 export default Feedback;
+
 
 
 
