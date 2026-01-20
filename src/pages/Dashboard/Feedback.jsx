@@ -100,7 +100,7 @@ const Feedback = () => {
       "Next Action Date": parts[5] || "",   
       "Remarks": parts.slice(6).join(" - "),  
 
-      "Employee Name": employee?.employeeName || "",
+      "Executive": employee?.employeeName || "",
     };
   });
 
@@ -189,6 +189,7 @@ const Feedback = () => {
 };
 
 export default Feedback;
+
 
 
 
