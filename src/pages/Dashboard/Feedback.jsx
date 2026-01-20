@@ -74,27 +74,51 @@ const Feedback = () => {
   }, [assignments]);
 
   const handleExport = () => {
-    if (!feedbackList.length || !selectedEmployeeKey) return;
+  if (!feedbackList.length || !selectedEmployeeKey) return;
 
-    const employee = employeeData.find(
-      (e) =>
-        e.employeeName
-          .toLowerCase()
-          .replace(/\s+/g, "_") === selectedEmployeeKey
-    );
+  const employee = employeeData.find(
+    (e) =>
+      e.employeeName
+        .toLowerCase()
+        .replace(/\s+/g, "_") === selectedEmployeeKey
+  );
 
-    const data = feedbackList.map((f) => ({
-      Loan_no: f.loan_no || "",
+  const data = feedbackList.map((f) => {
+    const parts = (f.feedback || "")
+      .split("-")
+      .map((p) => p.trim());
+
+    const [
+      actionDate = "",
+      placeContacted = "",
+      personContacted = "",
+      contactMode = "",
+      actionCode = "",
+      nextActionDate = "",
+      remarks = "",
+    ] = parts;
+
+    return {
+      "Loan No": f.loan_no || "",
       "Customer Name": f.name || "",
-      Feedback: f.feedback || "",
-      "Employee Name": employee?.employeeName || "",
-    }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Feedback");
-    XLSX.writeFile(wb, "feedback.xlsx");
-  };
+      "Action Date": actionDate,
+      "Place Contacted": placeContacted,
+      "Person Contacted": personContacted,
+      "Contact Mode": contactMode,
+      "Action Code": actionCode,
+      "Next Action Date": nextActionDate,
+      Remarks: remarks,
+
+      "Employee Name": employee?.employeeName || "",
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Feedback");
+  XLSX.writeFile(wb, "feedback.xlsx");
+};
 
   return (
     <DashBoardLayout activeMenu="Feedback">
@@ -175,6 +199,7 @@ const Feedback = () => {
 };
 
 export default Feedback;
+
 
 
 
