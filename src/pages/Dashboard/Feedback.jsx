@@ -73,7 +73,7 @@ const Feedback = () => {
     return assignments.filter((a) => a.feedback);
   }, [assignments]);
 
-  const handleExport = () => {
+ const handleExport = () => {
   if (!feedbackList.length || !selectedEmployeeKey) return;
 
   const employee = employeeData.find(
@@ -85,30 +85,20 @@ const Feedback = () => {
 
   const data = feedbackList.map((f) => {
     const parts = (f.feedback || "")
-      .split("-")
+      .split(" - ")
       .map((p) => p.trim());
-
-    const [
-      actionDate = "",
-      placeContacted = "",
-      personContacted = "",
-      contactMode = "",
-      actionCode = "",
-      nextActionDate = "",
-      remarks = "",
-    ] = parts;
 
     return {
       "Loan No": f.loan_no || "",
       "Customer Name": f.name || "",
 
-      "Action Date": actionDate,
-      "Place Contacted": placeContacted,
-      "Person Contacted": personContacted,
-      "Contact Mode": contactMode,
-      "Action Code": actionCode,
-      "Next Action Date": nextActionDate,
-      Remarks: remarks,
+      "Action Date": parts[0] || "", 
+      "Place Contacted": parts[1] || "",  
+      "Person Contacted": parts[2] || "",     
+      "Contact Mode": parts[3] || "",    
+      "Action Code": parts[4] || "",   
+      "Next Action Date": parts[5] || "",   
+      "Remarks": parts.slice(6).join(" - "),  
 
       "Employee Name": employee?.employeeName || "",
     };
@@ -199,6 +189,7 @@ const Feedback = () => {
 };
 
 export default Feedback;
+
 
 
 
